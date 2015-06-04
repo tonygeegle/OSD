@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+#创建日期：2015.06.04
 
 from distutils.core import setup
 import py2exe, sys, os
@@ -11,12 +12,11 @@ options = {'py2exe':{
 		"compressed": 1,
 		"optimize": 0, #1和2运行不起来
 		'bundle_files': 1,
-		"dll_excludes": ["w9xpopen.exe"],
-		"packages":["wx.lib.pubsub"]
+		"dll_excludes": ["w9xpopen.exe"]
 	}}
 
 setup(
-	version = '0.0.1',
+	version = '0.0.2',
 	description = 'yongxin OSD发送'.decode('utf8'),
 	name = 'OSD',#这儿的参数只能是ASCII字符
 	author = 'Leniy'.decode('utf8'),
