@@ -4,42 +4,46 @@
 import struct
 import hashlib
 import binascii
+import re
 
 class set_yongxin_osd_request(object):
 	def __init__(self, db_id = 1, cardid = '8537003845028690', content = "1010测试1010", Style = 1, Duration = 10):
-		self.db_id = db_id
-		self.cardid = cardid
-		self.content = content
-		self.Style = Style
-		self.Duration = Duration
+		self.db_id = int(re.findall(r"\d+",str(db_id))[0])
+		self.cardid = str(re.findall(r"8\d{15}",str(cardid))[0]) # 确保是以8开头的16位智能卡号
+		self.content = str(content)
+		self.Style = int(Style)
+		self.Duration = int(Duration)
+		re.purge()
 
-	def fun_Data_Cont(self):
+	def set_Data_Content(self):
 		Exp_Char = "card=" + self.cardid
-		Exp_Len = struct.pack('>B',len(Exp_Char))
+		Exp_Len = struct.pack('>B',len(Exp_Char)) # 1字节16进制，无符号字符型，大端网络序
 		Cont_Char = self.content
 		Cont_Len = struct.pack('>B',len(Cont_Char))
 		Style = struct.pack('>B', self.Style)
-		Duration = struct.pack('>L', self.Duration)
+		Duration = struct.pack('>L', self.Duration) # 4字节16进制，无符号长整型，大端网络序
 		return Exp_Len + Exp_Char + Cont_Len + Cont_Char + Style + Duration
 
-	def fun_Data_Body(self):
-		DB_ID = struct.pack('>H', self.db_id)
-		Msg_ID = "\x03\x04"
-		Data_Cont = self.fun_Data_Cont()
+	def set_Data_Body(self):
+		DB_ID = struct.pack('>H', self.db_id) # 2字节16进制，无符号短整形，大端网络序
+		Msg_ID = "\x03\x04" # OSD功能的代码
+		Data_Cont = self.set_Data_Content()
 		Data_Len = struct.pack('>H',len(Data_Cont))
-		bytes_need_to_padding = 8 - len(DB_ID + Msg_ID + Data_Cont + Data_Len)%8
+		bytes_need_to_padding = 8 - len(DB_ID + Msg_ID + Data_Cont + Data_Len)%8 # 不足8倍数个字节，要补足，以便加密
+		# 如果数据长度是8的倍数，没必要补全字节，但8减去len%8为8，会多加八个字节，占用网络资源
+		bytes_need_to_padding = 0 if 8 == bytes_need_to_padding else bytes_need_to_padding
 		Padding_Byte = ""
 		for i in range(bytes_need_to_padding):
 			Padding_Byte += "\x00"
 		MAC = binascii.a2b_hex(hashlib.md5(DB_ID + Msg_ID + Data_Len + Data_Cont + Padding_Byte).hexdigest())
 		return DB_ID + Msg_ID + Data_Len + Data_Cont + Padding_Byte + MAC
 
-	def fun_Data_Section(self):
+	def set_Data_Section(self):
 		Proto_Ver = "\x01"
 		Crypt_Ver_and_Key_Type = "\x06"
 		OPE_ID = "\xff\xff"
 		SMS_ID = "\x00\x01"
-		Data_Body = self.fun_Data_Body()
+		Data_Body = self.set_Data_Body()
 		DB_Len = struct.pack('>H',len(Data_Body))
 		return Proto_Ver + Crypt_Ver_and_Key_Type + OPE_ID + SMS_ID + DB_Len + Data_Body
 
