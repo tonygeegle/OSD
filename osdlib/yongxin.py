@@ -7,6 +7,28 @@ import binascii
 import re
 
 class set_yongxin_osd_request(object):
+	"""
+	Data_Section
+	  |--Proto_Ver
+	  |--Crypt_Ver
+	  |--Key_Type
+	  |--OPE_ID
+	  |--SMS_ID
+	  |--DB_Len
+	  |--Data_Body
+	      |--DB_ID
+	      |--Msg_ID
+	      |--Data_Len
+	      |--Data_Cont
+	          |--Exp_Len
+	          |--Exp_Char
+	          |--Cont_Len
+	          |--Cont_Char
+	          |--Style
+	          |--Duration
+	      |--Padding_Byte
+	      |--MAC
+	"""
 	def __init__(self, db_id = 1, cardid = '8537003845028690', content = "1010测试1010", Style = 1, Duration = 10):
 		self.db_id = int(re.findall(r"\d+",str(db_id))[0])
 		self.cardid = str(re.findall(r"8\d{15}",str(cardid))[0]) # 确保是以8开头的16位智能卡号
