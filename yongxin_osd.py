@@ -5,6 +5,7 @@
 from osdlib import *
 import socket
 import csv
+import os
 
 print 'source code file is ' + check_sourcefile_code()
 csvfile_code = check_csvfile_code('testcard.csv')
@@ -18,13 +19,22 @@ if __name__=="__main__" and 'GB2312' == csvfile_code:
 		csv_reader=csv.reader(csv_file)
 		db_id = 1
 		for row in csv_reader:
-			print len(row[0])
-			test = set_yongxin_osd_request(db_id, cardid = row[0], content = row[1], Style = 1, Duration = 10)
+			test = set_yongxin_osd_request(db_id, cardid = row[0], content = row[1], Style = row[2], Duration = row[3])
 			teststr = test.set_Data_Section()
 			#print repr(teststr)
-			s.send(teststr)
-			teststr_recv = s.recv(1024)
-			test_recv = analysis_yongxin_osd_response(yongxin_osd_response = teststr_recv)
+			try:
+				s.send(teststr)
+				print str(db_id) + "\t" + str(row[0]) + "\tSent OK"
+			except Exception, ex:
+				print str(db_id) + "\t" + str(row[0]) + "\tSent Error: " + str(ex)
+			try:
+				teststr_recv = s.recv(10240)
+				test_recv = analysis_yongxin_osd_response(yongxin_osd_response = teststr_recv)
+				test_errocode = test_recv.get_errocode_from_content()
+				print repr(test_recv.DB_ID) + "\t" + str(test_errocode.decode("utf8").encode("GB2312")) + "\n"
+			except Exception, ex:
+				print "xxoo........................."
 			db_id += 1
 	s.close()
 
+os.system("pause")

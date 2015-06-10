@@ -30,11 +30,12 @@ class set_yongxin_osd_request(object):
 	      |--MAC
 	"""
 	def __init__(self, db_id = 1, cardid = '8537003845028690', content = "1010测试1010", Style = 1, Duration = 10):
+		self.error_reason = None
 		self.db_id = int(re.findall(r"\d+",str(db_id))[0])
 		self.cardid = str(re.findall(r"8\d{15}",str(cardid))[0]) # 确保是以8开头的16位智能卡号
 		self.content = str(content)
-		self.Style = int(Style)
-		self.Duration = int(Duration)
+		self.Style = int(re.findall(r"\d+",str(Style))[0])
+		self.Duration = int(re.findall(r"\d+",str(Duration))[0])
 		re.purge()
 
 	def set_Data_Content(self):
@@ -70,28 +71,63 @@ class set_yongxin_osd_request(object):
 		return Proto_Ver + Crypt_Ver_and_Key_Type + OPE_ID + SMS_ID + DB_Len + Data_Body
 
 class analysis_yongxin_osd_response(object):
+	"""
+	Data_Section
+	  |--Proto_Ver
+	  |--Crypt_Ver
+	  |--Key_Type
+	  |--OPE_ID
+	  |--SMS_ID
+	  |--DB_Len
+	  |--Data_Body
+	      |--DB_ID
+	      |--Msg_ID
+	      |--Data_Len
+	      |--Data_Cont
+	          |--Erro_Code
+	      |--Padding_Byte
+	      |--MAC
+	"""
 	def __init__(self, yongxin_osd_response):
+		self.error_reason = None
 		self.yongxin_osd_response = yongxin_osd_response
+		self.get_body_from_section()
+		self.get_content_from_body()
+
+	def get_body_from_section(self):
 		self.Proto_Ver = self.yongxin_osd_response[0:1]
 		self.Crypt_Ver_and_Key_Type = self.yongxin_osd_response[1:2]
 		self.OPE_ID = self.yongxin_osd_response[2:4]
 		self.SMS_ID = self.yongxin_osd_response[4:6]
 		self.DB_Len = self.yongxin_osd_response[6:8]
 		self.Data_Body = self.yongxin_osd_response[8:]
-		if len(self.Data_Body) == struct.unpack('>H',self.DB_Len)[0]: # 判断长度是否正常
-			print "len right"
-		else:
-			print "len error"
+		if len(self.Data_Body) != struct.unpack('>H',self.DB_Len)[0]: # 判断长度是否正常
+			self.error_reason = "Response bits length error"
+			print "\t\t" + self.error_reason
+			return "ERROR"
+		return self.Data_Body
+
+	def get_content_from_body(self):
 		self.MAC = self.Data_Body[-16:]
-		if binascii.a2b_hex(hashlib.md5(self.Data_Body[:-16]).hexdigest()) == self.MAC: # 判断MD5校验是否通过
-			print "hash right"
-		else:
-			print "hash wrong"
-		self.DB_ID = self.Data_Body[0:2]
-		print repr(self.DB_ID)
+		if binascii.a2b_hex(hashlib.md5(self.Data_Body[:-16]).hexdigest()) != self.MAC: # 判断MD5校验是否通过
+			self.error_reason = "Response bits hash check wrong"
+			print "\t\t" + self.error_reason
+			return "ERROR"
+		self.DB_ID = struct.unpack('>H',str(self.Data_Body[0:2]))[0]
 		self.Msg_ID = self.Data_Body[2:4]
-		print repr(self.Msg_ID)
 		self.Data_Len = self.Data_Body[4:6]
-		print repr(self.Data_Len)
-		self.Erro_Code = self.Data_Body[6:10]
-		print repr(self.Erro_Code)
+		self.Data_Cont = self.Data_Body[6:10]
+		if len(self.Data_Cont) != struct.unpack('>H',self.Data_Len)[0]: # 判断长度是否正常
+			self.error_reason = "Response Content bits length error"
+			print "\t\t" + self.error_reason
+			return "ERROR"
+		return self.Data_Cont
+
+	def get_errocode_from_content(self):
+		self.errocode = struct.unpack('>L',self.Data_Cont)[0]
+		if 0 == self.errocode:
+			return "执行成功"
+		elif 2 == self.errocode:
+			return "操作的卡不存在"
+		else:
+			return self.errocode
