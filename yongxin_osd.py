@@ -8,13 +8,13 @@ import csv
 import os
 
 print 'source code file is ' + check_sourcefile_code()
-csvfile_code = check_csvfile_code('testcard.csv')
+csvfile_code = check_csvfile_code('yongxincard.csv')
 print 'csv file is ' + csvfile_code
 
 if __name__=="__main__" and 'GB2312' == csvfile_code:
 	s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	s.connect(("10.230.0.103", 7364))
-	with open('testcard.csv','rb') as csv_file:
+	with open('yongxincard.csv','rb') as csv_file:
 		next(csv_file)
 		csv_reader=csv.reader(csv_file)
 		db_id = 1
