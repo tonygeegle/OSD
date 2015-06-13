@@ -4,3 +4,4 @@
 
 from common import check_sourcefile_code, check_csvfile_code
 from yongxin import set_yongxin_osd_request, analysis_yongxin_osd_response
+from shuma import set_shuma_osd_request, analysis_shuma_osd_response
