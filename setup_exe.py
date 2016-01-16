@@ -22,6 +22,17 @@ setup(
 	author = 'Leniy'.decode('utf8'),
 	options = options,
 	zipfile=None,
-	data_files = [('res', ['res/author.png',"res/author.ico"]),('', ['testcard.csv'])],
+	data_files = [('res', ['res/author.png',"res/author.ico"]),('', ['yongxincard.csv'])],
 	console = [{'script': "yongxin_osd.py",'icon_resources': [(1, "res/author.ico")]}]
+)
+
+setup(
+	version = '0.0.2',
+	description = 'shuma OSD发送'.decode('utf8'),
+	name = 'OSD',#这儿的参数只能是ASCII字符
+	author = 'Leniy'.decode('utf8'),
+	options = options,
+	zipfile=None,
+	data_files = [('res', ['res/author.png',"res/author.ico"]),('', ['shumacard.csv'])],
+	console = [{'script': "shuma_osd.py",'icon_resources': [(1, "res/author.ico")]}]
 )

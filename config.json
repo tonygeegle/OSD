@@ -1,0 +1,14 @@
+{
+	"shuma":{
+		"ip":"10.230.0.82",
+		"port":8000,
+		"Show_Times":2
+	},
+
+	"yongxin":{
+		"ip":"10.230.0.103",
+		"port":7364,
+		"Style":1,
+		"Duration":30
+	}
+}

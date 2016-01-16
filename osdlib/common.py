@@ -2,6 +2,8 @@
 # -*- coding: UTF-8 -*-
 #创建日期：2015.06.04
 
+import json
+
 def check_sourcefile_code():
 	if "\xd2\xbb" == "一":
 		sourcecode = 'GB2312'
@@ -20,3 +22,9 @@ def check_csvfile_code(csvfilename):
 		else:
 			csvfilecode = 'unknown code'
 	return csvfilecode
+
+def get_config(configfilename):
+	f = file(configfilename);
+	s = json.load(f)
+	f.close
+	return s
